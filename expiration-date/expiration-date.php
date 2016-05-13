@@ -21,6 +21,8 @@ add_action( 'add_meta_boxes', 'tutsplus_add_expiry_date_metabox' );
 
 
 function tutsplus_expiry_date_metabox_callback( $post ) { ?>
+
+	<?php wp_nonce_field( 'tutsplus_expiry_date_metabox_nonce', 'tutsplus_nonce' ); ?>
      
     <form action="" method="post">
          
@@ -36,6 +38,26 @@ function tutsplus_expiry_date_metabox_callback( $post ) { ?>
     </form>
      
 <?php }
+
+function tutsplus_save_expiry_date_meta( $post_id ) {
+
+	if( !isset( $_POST['tutsplus_nonce'] ) ||
+    !wp_verify_nonce( $_POST['tutsplus_nonce'],
+    'tutsplus_expiry_date_metabox_nonce'
+    ) ) 
+    return;
+     
+    // Check if the current user has permission to edit the post. */
+    if ( !current_user_can( 'edit_post', $post->ID ) )
+    return;
+     
+    if ( isset( $_POST['tutsplus_expiry_date'] ) ) {        
+        $new_expiry_date = ( $_POST['tutsplus_expiry_date'] );
+        update_post_meta( $post_id, 'expires', $new_expiry_date );      
+    }
+     
+}
+add_action( 'save_post', 'tutsplus_save_expiry_date_meta' );
 
 
 ?>
