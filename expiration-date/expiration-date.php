@@ -30,7 +30,7 @@ function tutsplus_expiry_date_metabox_callback( $post ) { ?>
      
  <form action="" method="post">
          
-        <?php        
+        <?php   
         //retrieve metadata value if it exists
         $tutsplus_expiry_date = get_post_meta( $post->ID, 'expires', true );
         ?>
@@ -40,12 +40,12 @@ function tutsplus_expiry_date_metabox_callback( $post ) { ?>
         <input type="text" class="MyDate" name="tutsplus_expiry_date" value=<?php echo esc_attr( $tutsplus_expiry_date ); ?> / >     
 
         <script type="text/javascript">
-    jQuery(document).ready(function() {
-        jQuery('.MyDate').datepicker({
-            dateFormat : 'dd-mm-yy'
+         jQuery(document).ready(function() {
+         jQuery('.MyDate').datepicker({
+            dateFormat : 'yy-mm-dd'
         });
     });
-    
+
 </script>       
      
     </form>
@@ -65,6 +65,29 @@ function tutsplus_save_expiry_date_meta( $post_id ) {
      
 }
 add_action( 'save_post', 'tutsplus_save_expiry_date_meta' );
+
+function tutsplus_filter_expired_posts( $query ) {
+     
+    // doesn't affect admin screens
+    if ( is_admin() )
+        return;
+    // check for main query 
+    if ( $query->is_main_query() ) {
+ 
+        //filter out expired posts
+        $today = date('Y/m/d');
+        $metaquery = array(
+            array(
+                 'key' => 'expires',
+                 'value' => $today,
+                 'compare' => '<',
+                 'type' => 'DATE',
+            )
+        );
+        $query->set( 'meta_query', $metaquery );
+    }
+}
+add_action( 'pre_get_posts', 'tutsplus_filter_expired_posts' );
 
 
 ?>
